@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# User/machine-specific toolbox config
+zsh/*.local.zsh

@@ -1,0 +1,68 @@
+# Toggle lid sleep by flipping pmset disablesleep.
+lidsleep() {
+  local current
+  current=$(pmset -g | awk '/SleepDisabled/ {print $2; exit}')
+  if [[ -z "$current" ]]; then
+    current=$(pmset -g custom | awk '/disablesleep/ {print $2; exit}')
+  fi
+
+  case "$1" in
+    on|enable)
+      sudo pmset -a disablesleep 1
+      echo "Lid sleep disabled (disablesleep=1)."
+      return
+      ;;
+    off|disable)
+      sudo pmset -a disablesleep 0
+      echo "Lid sleep enabled (disablesleep=0)."
+      return
+      ;;
+    status)
+      if [[ -n "$current" ]]; then
+        echo "SleepDisabled=$current"
+      else
+        echo "SleepDisabled not found in pmset output."
+      fi
+      return
+      ;;
+  esac
+
+  if [[ "$current" == "1" ]]; then
+    sudo pmset -a disablesleep 0
+    echo "Lid sleep enabled (disablesleep=0)."
+  else
+    sudo pmset -a disablesleep 1
+    echo "Lid sleep disabled (disablesleep=1)."
+  fi
+}
+
+# Set all Discord processes to lowest priority
+renice-discord() {
+  local pids=$(ps aux | grep -i discord | grep -v grep | awk '{print $2}')
+  if [[ -z "$pids" ]]; then
+    echo "No Discord processes found."
+    return 1
+  fi
+
+  echo "$pids" | xargs -I {} renice -n 20 -p {} 2>/dev/null
+
+  local count=$(echo "$pids" | wc -l | tr -d ' ')
+  echo "Set $count Discord processes to niceness 20 (lowest priority)."
+}
+alias discord-renice='renice-discord'
+
+export NX_NATIVE_FILE_CACHE_DIRECTORY="$HOME/.nx/native-file-cache"
+export NX_TUI=false
+export NX_SOCKET_DIR=/tmp/nx
+
+if [[ -r "$HOME/.fractals-toolbox/zsh/hosts.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/zsh/hosts.zsh"
+fi
+
+if [[ -r "$HOME/.fractals-toolbox/zsh/sshtunnel.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/zsh/sshtunnel.zsh"
+fi
+
+if [[ -r "$HOME/.fractals-toolbox/zsh/sshsend.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/zsh/sshsend.zsh"
+fi
