@@ -36,6 +36,82 @@ lidsleep() {
   fi
 }
 
+# Kill processes bound to one or more local ports.
+portkill() {
+  if (( $# == 0 )); then
+    echo "Usage: portkill <port> [port ...]" >&2
+    return 1
+  fi
+
+  if ! command -v lsof >/dev/null 2>&1; then
+    echo "lsof is required for portkill." >&2
+    return 1
+  fi
+
+  local port pid
+  local -a invalid_ports ports_without_processes unique_pids killed_pids failed_pids
+  local -a port_pids
+  local -A seen_pids
+
+  for port in "$@"; do
+    if [[ "$port" != <-> || "$port" -lt 1 || "$port" -gt 65535 ]]; then
+      invalid_ports+=("$port")
+      continue
+    fi
+
+    port_pids=("${(@f)$(lsof -ti :"$port" 2>/dev/null)}")
+    port_pids=("${(@)port_pids:#}")
+    if (( ${#port_pids[@]} == 0 )); then
+      ports_without_processes+=("$port")
+      continue
+    fi
+
+    for pid in "${port_pids[@]}"; do
+      if [[ -z "${seen_pids[$pid]-}" ]]; then
+        seen_pids[$pid]=1
+        unique_pids+=("$pid")
+      fi
+    done
+  done
+
+  if (( ${#invalid_ports[@]} > 0 )); then
+    echo "Invalid port value(s): ${(j:, :)invalid_ports}" >&2
+  fi
+
+  if (( ${#unique_pids[@]} == 0 )); then
+    if (( ${#ports_without_processes[@]} > 0 )); then
+      echo "No processes found on port(s): ${(j:, :)ports_without_processes}"
+    else
+      echo "No killable processes found for the provided ports."
+    fi
+    return 1
+  fi
+
+  for pid in "${unique_pids[@]}"; do
+    if kill "$pid" >/dev/null 2>&1; then
+      killed_pids+=("$pid")
+    else
+      failed_pids+=("$pid")
+    fi
+  done
+
+  if (( ${#ports_without_processes[@]} > 0 )); then
+    echo "No processes found on port(s): ${(j:, :)ports_without_processes}"
+  fi
+
+  if (( ${#killed_pids[@]} > 0 )); then
+    echo "Killed ${#killed_pids[@]} process(es): ${(j:, :)killed_pids}"
+  else
+    echo "Found process(es), but none could be killed." >&2
+  fi
+
+  if (( ${#failed_pids[@]} > 0 )); then
+    echo "Failed to kill process(es): ${(j:, :)failed_pids}" >&2
+  fi
+
+  (( ${#killed_pids[@]} > 0 ))
+}
+
 # Set all Discord processes to lowest priority
 renice-discord() {
   local pids=$(ps aux | grep -i discord | grep -v grep | awk '{print $2}')
