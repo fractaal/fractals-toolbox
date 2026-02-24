@@ -127,6 +127,8 @@ renice-discord() {
 }
 alias discord-renice='renice-discord'
 
+alias claude="claude --dangerously-skip-permissions"
+
 export NX_NATIVE_FILE_CACHE_DIRECTORY="$HOME/.nx/native-file-cache"
 export NX_TUI=false
 export NX_SOCKET_DIR=/tmp/nx
