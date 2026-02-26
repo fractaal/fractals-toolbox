@@ -1,3 +1,7 @@
+# Prepend fractals-toolbox/bin so wrapper scripts (e.g. qmd serializer)
+# shadow their originals on PATH.
+export PATH="$HOME/.fractals-toolbox/bin:$PATH"
+
 # Toggle lid sleep by flipping pmset disablesleep.
 lidsleep() {
   local current

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# qmd — serializing wrapper
+# Ensures only one qmd process runs at a time (queues the rest).
+# Prevents M1 Pro freezes when AI agents fire parallel searches.
+set -euo pipefail
+
+LOCK_DIR="/tmp/qmd.lock"
+PID_FILE="$LOCK_DIR/pid"
+REAL_QMD="$HOME/.bun/bin/qmd"
+
+acquire_lock() {
+  while true; do
+    if mkdir "$LOCK_DIR" 2>/dev/null; then
+      echo $$ > "$PID_FILE"
+      return 0
+    fi
+    # Stale-lock recovery: if the owning PID is dead, break the lock
+    if [[ -f "$PID_FILE" ]]; then
+      local owner
+      owner=$(<"$PID_FILE") 2>/dev/null || true
+      if [[ -n "$owner" ]] && ! kill -0 "$owner" 2>/dev/null; then
+        rm -rf "$LOCK_DIR"
+        continue
+      fi
+    fi
+    sleep 0.5
+  done
+}
+
+acquire_lock
+trap 'rm -rf "$LOCK_DIR" 2>/dev/null || true' EXIT INT TERM HUP
+
+# Run as child (not exec) so the trap fires on exit.
+"$REAL_QMD" "$@"
