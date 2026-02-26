@@ -6,7 +6,7 @@ set -euo pipefail
 
 LOCK_DIR="/tmp/qmd.lock"
 PID_FILE="$LOCK_DIR/pid"
-REAL_QMD="$HOME/.bun/bin/qmd"
+REAL_QMD="$HOME/.bun/bin/qmd-real"
 
 acquire_lock() {
   while true; do
