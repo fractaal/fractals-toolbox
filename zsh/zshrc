@@ -148,3 +148,7 @@ fi
 if [[ -r "$HOME/.fractals-toolbox/zsh/sshsend.zsh" ]]; then
   source "$HOME/.fractals-toolbox/zsh/sshsend.zsh"
 fi
+
+if [[ -r "$HOME/.fractals-toolbox/zsh/ytdl.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/zsh/ytdl.zsh"
+fi
