@@ -8,6 +8,15 @@ LOCK_DIR="/tmp/qmd.lock"
 PID_FILE="$LOCK_DIR/pid"
 REAL_QMD="$HOME/.bun/bin/qmd-real"
 
+# Long-lived subcommands (daemons) bypass the lock — they don't
+# compete for CPU the way update/embed/search do, and holding the
+# lock for their entire lifetime starves every other invocation.
+case "${1:-}" in
+  mcp|serve|server)
+    exec "$REAL_QMD" "$@"
+    ;;
+esac
+
 acquire_lock() {
   while true; do
     if mkdir "$LOCK_DIR" 2>/dev/null; then
