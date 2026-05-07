@@ -152,3 +152,12 @@ fi
 if [[ -r "$HOME/.fractals-toolbox/shell/zsh/ytdl.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/ytdl.zsh"
 fi
+
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tls.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/tls.zsh"
+fi
+
+# Autospawn last — it execs tmux, replacing the shell process.
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tmux-autospawn.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/tmux-autospawn.zsh"
+fi

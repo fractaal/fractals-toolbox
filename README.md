@@ -42,6 +42,18 @@ Persistent SSH tunnel manager with auto-reconnect.
 
 Quick file transfer to remote hosts via `scp`, integrated with host aliases.
 
+### shell/{zsh,fish}/tmux-autospawn.{zsh,fish}
+
+Auto-spawns a fresh `term-$pid` tmux session for every new interactive terminal window. Skips inside an existing tmux session, in non-interactive shells, and when tmux is missing. Sourced last by each shell's umbrella because it `exec`s tmux, replacing the shell process.
+
+### shell/{zsh,fish}/tls.{zsh,fish}
+
+Defines a `tls` function — pane-title-aware tmux session lister. Output: `<session>  ●/○  <pane-title summary>` per session, where the title format mirrors `set-titles-string` from the tmux config so what kitty shows in its tab bar and what `tls` prints for that session match.
+
+### shell/fish/fractals-toolbox.fish
+
+Fish entry point. The deploy installer symlinks this into `~/.config/fish/conf.d/`; fish auto-loads everything in that dir. Sources the fish modules above in dependency order.
+
 ### deploy/
 
 Deployment scripts.
