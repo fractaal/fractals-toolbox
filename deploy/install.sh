@@ -6,8 +6,10 @@
 #   - zsh:   ~/.zshrc marker blocks (plugins + zshrc), prune dead inline autospawn
 #   - fish:  symlink shell/fish/fractals-toolbox.fish → ~/.config/fish/conf.d/
 #
-# Each branch is independent and idempotent. Re-running on a healthy machine
-# is a no-op aside from log lines.
+# Each branch is idempotent. Branches run sequentially under `set -e`; if an
+# earlier branch fails, later branches do not run — fix the failure and re-run.
+#
+# Requires: bash, python3 (for safe in-place ~/.zshrc edits).
 set -euo pipefail
 
 TOOLBOX="$HOME/.fractals-toolbox"

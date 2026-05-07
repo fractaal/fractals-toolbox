@@ -9,9 +9,11 @@ git clone https://github.com/fractaal/fractals-toolbox.git ~/.fractals-toolbox
 bash ~/.fractals-toolbox/deploy/install.sh
 ```
 
+Requires `bash` and `python3` (the zsh branch uses python3 for safe in-place `~/.zshrc` edits).
+
 The installer detects what's on the machine and applies the matching wiring:
 
-- **tmux** (always): symlinks `~/.tmux.conf` to `common/tmux/tmux.conf`. Backs up any pre-existing file as `~/.tmux.conf.pre-fractals.<timestamp>.bak`.
+- **tmux** (always): symlinks `~/.tmux.conf` to `common/tmux/tmux.conf`. Backs up any pre-existing regular file as `~/.tmux.conf.pre-fractals.<timestamp>.bak`. A pre-existing symlink pointing somewhere else is replaced without backup (the previous target is logged).
 - **zsh** (when `~/.zshrc` exists): inserts/updates marker blocks in `~/.zshrc` that source `shell/zsh/omz-plugins.zsh` and `shell/zsh/zshrc`. Removes the redundant inline tmux-autospawn block (toolbox now owns it).
 - **fish** (when `command -v fish` succeeds): symlinks `shell/fish/fractals-toolbox.fish` into `~/.config/fish/conf.d/`, where fish auto-loads it on every interactive session.
 
