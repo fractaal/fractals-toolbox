@@ -1,13 +1,9 @@
-if [[ -r "$HOME/.fractals-toolbox/zsh/hosts.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/hosts.zsh"
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/sshtunnel.config.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/sshtunnel.config.zsh"
 fi
 
-if [[ -r "$HOME/.fractals-toolbox/zsh/sshtunnel.config.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/sshtunnel.config.zsh"
-fi
-
-if [[ -r "$HOME/.fractals-toolbox/zsh/sshtunnel.local.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/sshtunnel.local.zsh"
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/sshtunnel.local.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/sshtunnel.local.zsh"
 fi
 
 # Optional private overrides for host aliases/profiles.
@@ -61,7 +57,7 @@ __sshtunnel_list_profiles() {
   profile_names=(${(ok)SSHTUNNEL_PROFILES})
   if (( ${#profile_names[@]} == 0 )); then
     echo "No port profiles configured."
-    echo "Add profiles in ~/.fractals-toolbox/zsh/sshtunnel.local.zsh"
+    echo "Add profiles in ~/.fractals-toolbox/shell/zsh/sshtunnel.local.zsh"
     return 1
   fi
 

@@ -1,7 +1,3 @@
-if [[ -r "$HOME/.fractals-toolbox/zsh/hosts.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/hosts.zsh"
-fi
-
 __sshsend_usage() {
   cat <<'EOF'
 Usage:

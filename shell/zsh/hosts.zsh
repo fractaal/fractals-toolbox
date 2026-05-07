@@ -7,12 +7,12 @@ __fractal_load_host_aliases() {
   typeset -gA FRACTAL_HOST_ALIASES
   FRACTAL_HOST_ALIASES=()
 
-  if [[ -r "$HOME/.fractals-toolbox/zsh/hosts.config.zsh" ]]; then
-    source "$HOME/.fractals-toolbox/zsh/hosts.config.zsh"
+  if [[ -r "$HOME/.fractals-toolbox/shell/zsh/hosts.config.zsh" ]]; then
+    source "$HOME/.fractals-toolbox/shell/zsh/hosts.config.zsh"
   fi
 
-  if [[ -r "$HOME/.fractals-toolbox/zsh/hosts.local.zsh" ]]; then
-    source "$HOME/.fractals-toolbox/zsh/hosts.local.zsh"
+  if [[ -r "$HOME/.fractals-toolbox/shell/zsh/hosts.local.zsh" ]]; then
+    source "$HOME/.fractals-toolbox/shell/zsh/hosts.local.zsh"
   fi
 
   # Optional private overrides for shared host aliases.

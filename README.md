@@ -7,12 +7,12 @@ Personal shell utilities and tooling. Sourced from `~/.zshrc` (or equivalent).
 Source the main zshrc from your shell config:
 
 ```zsh
-[[ -r "$HOME/.fractals-toolbox/zsh/zshrc" ]] && source "$HOME/.fractals-toolbox/zsh/zshrc"
+[[ -r "$HOME/.fractals-toolbox/shell/zsh/zshrc" ]] && source "$HOME/.fractals-toolbox/shell/zsh/zshrc"
 ```
 
 ## What's included
 
-### zsh/zshrc
+### shell/zsh/zshrc
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -21,7 +21,7 @@ Source the main zshrc from your shell config:
 | `renice-discord` | function | Set all Discord processes to lowest CPU priority (niceness 20) |
 | `claude` | alias | Runs `claude --dangerously-skip-permissions` by default |
 
-### zsh/hosts.zsh
+### shell/zsh/hosts.zsh
 
 Named host-alias system — define friendly names for SSH targets in `hosts.config.zsh` or `hosts.local.zsh` (gitignored).
 
@@ -30,14 +30,21 @@ Named host-alias system — define friendly names for SSH targets in `hosts.conf
 | `h <alias>` | SSH into a host alias |
 | `h --list` | List all configured host aliases |
 
-### zsh/sshtunnel.zsh
+### shell/zsh/sshtunnel.zsh
 
 Persistent SSH tunnel manager with auto-reconnect.
 
-### zsh/sshsend.zsh
+### shell/zsh/sshsend.zsh
 
 Quick file transfer to remote hosts via `scp`, integrated with host aliases.
 
 ### deploy/
 
 Deployment scripts.
+
+## Known issues
+
+- `~/.bun/bin/qmd` is a symlink that may point at the pre-restructure
+  path `~/.fractals-toolbox/bin/qmd`. After this restructure the wrapper
+  lives at `~/.fractals-toolbox/common/bin/qmd`. Repoint the symlink
+  manually if you rely on it: `ln -sf ~/.fractals-toolbox/common/bin/qmd ~/.bun/bin/qmd`.

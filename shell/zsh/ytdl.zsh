@@ -11,12 +11,12 @@ __ytdl_load_path_aliases() {
   typeset -gA FRACTAL_YTDL_PATH_ALIASES
   FRACTAL_YTDL_PATH_ALIASES=()
 
-  if [[ -r "$HOME/.fractals-toolbox/zsh/ytdl.config.zsh" ]]; then
-    source "$HOME/.fractals-toolbox/zsh/ytdl.config.zsh"
+  if [[ -r "$HOME/.fractals-toolbox/shell/zsh/ytdl.config.zsh" ]]; then
+    source "$HOME/.fractals-toolbox/shell/zsh/ytdl.config.zsh"
   fi
 
-  if [[ -r "$HOME/.fractals-toolbox/zsh/ytdl.local.zsh" ]]; then
-    source "$HOME/.fractals-toolbox/zsh/ytdl.local.zsh"
+  if [[ -r "$HOME/.fractals-toolbox/shell/zsh/ytdl.local.zsh" ]]; then
+    source "$HOME/.fractals-toolbox/shell/zsh/ytdl.local.zsh"
   fi
 
   if [[ -r "$HOME/.fractals-toolbox-private/personal/ytdl.config.zsh" ]]; then

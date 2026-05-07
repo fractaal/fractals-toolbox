@@ -1,6 +1,6 @@
-# Prepend fractals-toolbox/bin so wrapper scripts (e.g. qmd serializer)
+# Prepend fractals-toolbox/common/bin so wrapper scripts (e.g. qmd serializer)
 # shadow their originals on PATH.
-export PATH="$HOME/.fractals-toolbox/bin:$PATH"
+export PATH="$HOME/.fractals-toolbox/common/bin:$PATH"
 
 # Toggle lid sleep by flipping pmset disablesleep.
 lidsleep() {
@@ -137,18 +137,18 @@ export NX_NATIVE_FILE_CACHE_DIRECTORY="$HOME/.nx/native-file-cache"
 export NX_TUI=false
 export NX_SOCKET_DIR=/tmp/nx
 
-if [[ -r "$HOME/.fractals-toolbox/zsh/hosts.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/hosts.zsh"
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/hosts.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/hosts.zsh"
 fi
 
-if [[ -r "$HOME/.fractals-toolbox/zsh/sshtunnel.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/sshtunnel.zsh"
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/sshtunnel.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/sshtunnel.zsh"
 fi
 
-if [[ -r "$HOME/.fractals-toolbox/zsh/sshsend.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/sshsend.zsh"
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/sshsend.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/sshsend.zsh"
 fi
 
-if [[ -r "$HOME/.fractals-toolbox/zsh/ytdl.zsh" ]]; then
-  source "$HOME/.fractals-toolbox/zsh/ytdl.zsh"
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/ytdl.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/ytdl.zsh"
 fi
