@@ -14,7 +14,7 @@ Source the main zshrc from your shell config:
 
 ### common/tmux/tmux.conf
 
-Shared tmux configuration — read by tmux regardless of shell or OS. The deploy installer symlinks `~/.tmux.conf` to this file. Sets mouse on, vi-mode keys, double pane borders, a `C-b T` keybind to rename the current pane title, and forwards pane titles up to the outer terminal (kitty tab bar) so multi-pane sessions stay legible.
+Shared tmux configuration — read by tmux regardless of shell or OS. The deploy installer will symlink `~/.tmux.conf` to this file. Sets mouse on, vi-mode keys, double-lined pane borders with a top status row showing pane index, title, and running command, a `C-b T` keybind to rename the current pane title, and forwards pane titles up to the outer terminal (kitty tab bar) so multi-pane sessions stay legible.
 
 ### shell/zsh/zshrc
 
