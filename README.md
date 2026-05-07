@@ -4,7 +4,22 @@ Personal shell utilities and tooling. Sourced from `~/.zshrc` (or equivalent).
 
 ## Setup
 
-Source the main zshrc from your shell config:
+```bash
+git clone https://github.com/fractaal/fractals-toolbox.git ~/.fractals-toolbox
+bash ~/.fractals-toolbox/deploy/install.sh
+```
+
+The installer detects what's on the machine and applies the matching wiring:
+
+- **tmux** (always): symlinks `~/.tmux.conf` to `common/tmux/tmux.conf`. Backs up any pre-existing file as `~/.tmux.conf.pre-fractals.<timestamp>.bak`.
+- **zsh** (when `~/.zshrc` exists): inserts/updates marker blocks in `~/.zshrc` that source `shell/zsh/omz-plugins.zsh` and `shell/zsh/zshrc`. Removes the redundant inline tmux-autospawn block (toolbox now owns it).
+- **fish** (when `command -v fish` succeeds): symlinks `shell/fish/fractals-toolbox.fish` into `~/.config/fish/conf.d/`, where fish auto-loads it on every interactive session.
+
+Re-runs are idempotent — it's safe to invoke after `git pull`. A timestamped backup of `~/.zshrc` is written every time the file actually changes.
+
+### Manual zsh-only setup (alternative)
+
+If you'd rather skip the installer and only want the zsh side:
 
 ```zsh
 [[ -r "$HOME/.fractals-toolbox/shell/zsh/zshrc" ]] && source "$HOME/.fractals-toolbox/shell/zsh/zshrc"
