@@ -157,6 +157,10 @@ if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tls.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/tls.zsh"
 fi
 
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tjoin.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/tjoin.zsh"
+fi
+
 # Autospawn last — it execs tmux, replacing the shell process.
 if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tmux-autospawn.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/tmux-autospawn.zsh"

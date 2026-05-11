@@ -67,6 +67,10 @@ Auto-spawns a fresh `term-$pid` tmux session for every new interactive terminal 
 
 Defines a `tls` function — pane-title-aware tmux session lister. Output: `<session>  ●/○  <pane-title summary>` per session, where the title format mirrors `set-titles-string` from the tmux config so what kitty shows in its tab bar and what `tls` prints for that session match.
 
+### shell/{zsh,fish}/tjoin.{zsh,fish}
+
+Defines `tjoin <pattern>` (alias `tj`) — case-insensitive substring match against `session_name + pane titles`, then switches your tmux client to the unique match (`switch-client` inside tmux, `attach` from outside). 0 matches errors; >1 matches list candidates so you can be more specific. Confirmation: `Joining term-389741 "✳ aria-no-result-bogus-recovery-bug"`.
+
 ### shell/fish/fractals-toolbox.fish
 
 Fish entry point. The deploy installer symlinks this into `~/.config/fish/conf.d/`; fish auto-loads everything in that dir. Sources the fish modules above in dependency order.

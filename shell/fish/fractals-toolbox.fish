@@ -13,6 +13,10 @@ if test -r "$fractal_fish_dir/tls.fish"
     source "$fractal_fish_dir/tls.fish"
 end
 
+if test -r "$fractal_fish_dir/tjoin.fish"
+    source "$fractal_fish_dir/tjoin.fish"
+end
+
 if test -r "$fractal_fish_dir/tmux-autospawn.fish"
     source "$fractal_fish_dir/tmux-autospawn.fish"
 end
