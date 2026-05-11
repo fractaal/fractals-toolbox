@@ -9,12 +9,15 @@ function tjoin --description 'Fuzzy-match a tmux session by name/pane title and 
     end
 
     set -l pattern (string lower -- $argv[1])
+    # Escape regex meta so the user's pattern is treated as a literal substring
+    # (matches zsh's [[ "$haystack" == *"$pattern"* ]] semantics).
+    set -l escaped (string escape --style=regex -- $pattern)
     set -l matches
 
     set -l lines (tmux list-sessions -F '#{session_name}	#{W:#{?#{==:#{window_panes},1},#{pane_title},#{P:[#{pane_title}] }} | }')
     for line in $lines
         set -l haystack (string lower -- $line)
-        if string match -q -- "*$pattern*" $haystack
+        if string match -qr -- ".*$escaped.*" $haystack
             set -a matches $line
         end
     end
