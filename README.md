@@ -84,7 +84,7 @@ Defines a `tls` function — pane-title-aware tmux session lister. Output: `<ses
 
 ### shell/{zsh,fish}/tjoin.{zsh,fish}
 
-Defines `tjoin <pattern>` (alias `tj`) — case-insensitive substring match against `session_name + pane titles`, then switches your tmux client to the unique match (`switch-client` inside tmux, `attach` from outside). 0 matches errors; >1 matches list candidates so you can be more specific. Confirmation: `Joining term-389741 "✳ aria-no-result-bogus-recovery-bug"`.
+Defines `tjoin <pattern>` (alias `tj`) — case-insensitive substring match against `session_name + pane titles`, then switches your tmux client to the unique match (`switch-client` inside tmux, `attach` from outside). 0 matches errors; >1 matches list candidates so you can be more specific. Confirmation: `Joining term-389741 "✳ fix-login-redirect"`.
 
 ### shell/fish/fractals-toolbox.fish
 
