@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Switch DP-8 to the Mac-friendly Sunshine streaming mode.
+#
+# This intentionally stops Sunshine before modesetting and starts it afterward.
+# Live modesetting while Sunshine is capturing has wedged Hyprland/aquamarine on
+# this machine.
+set -euo pipefail
+
+MONITOR="${SUNSHINE_STREAM_MONITOR:-DP-8}"
+MODE="${SUNSHINE_MAC_STREAM_MODE:-3024x1964@60}"
+POSITION="${SUNSHINE_STREAM_POSITION:-1600x0}"
+SCALE="${SUNSHINE_MAC_STREAM_SCALE:-1.33}"
+SUNSHINE_UNIT="${SUNSHINE_SYSTEMD_UNIT:-sunshine.service}"
+
+usage() {
+  cat <<EOF
+Usage: mac-stream-mode [--dry-run]
+
+Stops Sunshine, sets ${MONITOR} to ${MODE} at scale ${SCALE}, then starts Sunshine.
+
+Environment overrides:
+  SUNSHINE_STREAM_MONITOR   default: DP-8
+  SUNSHINE_MAC_STREAM_MODE  default: 3024x1964@60
+  SUNSHINE_STREAM_POSITION  default: 1600x0
+  SUNSHINE_MAC_STREAM_SCALE default: 1.33
+  SUNSHINE_SYSTEMD_UNIT     default: sunshine.service
+EOF
+}
+
+DRY_RUN=0
+case "${1:-}" in
+  --dry-run|-n)
+    DRY_RUN=1
+    ;;
+  --help|-h)
+    usage
+    exit 0
+    ;;
+  "")
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac
+
+run() {
+  printf '+'
+  printf ' %q' "$@"
+  printf '\n'
+  if (( DRY_RUN == 0 )); then
+    "$@"
+  fi
+}
+
+hypr_env() {
+  export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+  if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    HYPRLAND_INSTANCE_SIGNATURE="$(ls -t "${XDG_RUNTIME_DIR}/hypr/" 2>/dev/null | head -1)"
+    export HYPRLAND_INSTANCE_SIGNATURE
+  fi
+
+  if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    echo "Could not determine HYPRLAND_INSTANCE_SIGNATURE." >&2
+    exit 1
+  fi
+}
+
+verify_monitor() {
+  hyprctl monitors -j |
+    jq -r --arg monitor "$MONITOR" '.[] | select(.name == $monitor) | "\(.name) \(.width)x\(.height)@\(.refreshRate) scale=\(.scale)"'
+}
+
+hypr_env
+TARGET="${MONITOR},${MODE},${POSITION},${SCALE}"
+
+echo "Switching ${MONITOR} to Mac stream mode: ${MODE}, position ${POSITION}, scale ${SCALE}."
+echo "Sunshine will be stopped first; active Moonlight sessions will disconnect."
+
+run systemctl --user stop "$SUNSHINE_UNIT"
+run /usr/bin/timeout 5 hyprctl keyword monitor "$TARGET"
+run systemctl --user start "$SUNSHINE_UNIT"
+
+if (( DRY_RUN == 0 )); then
+  echo "Current monitor state:"
+  verify_monitor
+  echo "Sunshine state: $(systemctl --user is-active "$SUNSHINE_UNIT")"
+fi

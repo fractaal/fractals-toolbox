@@ -53,6 +53,15 @@ Portable commands added to `PATH` by the zsh/fish entry points.
 | `renice-discord` | function | Set all Discord processes to lowest CPU priority (niceness 20) |
 | `claude` | alias | Runs `claude --dangerously-skip-permissions` by default |
 
+### common/bin
+
+Portable commands added to `PATH` by the zsh/fish entry points.
+
+| Command | Description |
+|---------|-------------|
+| `mac-stream-mode` | Stop Sunshine, switch DP-8 to `3024x1964@60` scale `1.33`, then start Sunshine |
+| `native-monitor-mode` | Stop Sunshine, restore DP-8 to `3440x1440@180` scale `1`, then start Sunshine |
+
 ### shell/zsh/hosts.zsh
 
 Named host-alias system — define friendly names for SSH targets in `hosts.config.zsh` or `hosts.local.zsh` (gitignored).
