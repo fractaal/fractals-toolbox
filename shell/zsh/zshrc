@@ -153,12 +153,20 @@ if [[ -r "$HOME/.fractals-toolbox/shell/zsh/ytdl.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/ytdl.zsh"
 fi
 
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tmux-sessions.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/tmux-sessions.zsh"
+fi
+
 if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tls.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/tls.zsh"
 fi
 
 if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tjoin.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/tjoin.zsh"
+fi
+
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tkill.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/tkill.zsh"
 fi
 
 # Autospawn last — tmux runs as a child so the shell resumes on detach.

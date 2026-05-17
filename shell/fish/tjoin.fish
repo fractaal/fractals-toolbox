@@ -2,9 +2,29 @@
 # then switch to it (switch-client inside tmux, attach from outside).
 # Usage: tjoin <pattern>
 #        tj    <pattern>
+#        tjoin-tui [initial-query]
+#        tjt       [initial-query]
+
+if not functions -q __fractals_tmux_session_rows
+    if test -r "$HOME/.fractals-toolbox/shell/fish/tmux-sessions.fish"
+        source "$HOME/.fractals-toolbox/shell/fish/tmux-sessions.fish"
+    end
+end
+
+function __fractals_tjoin_switch_to_session -a name titles
+    echo "Joining $name \"$titles\""
+
+    if set -q TMUX
+        tmux switch-client -t $name
+    else
+        tmux attach -t $name
+    end
+end
+
 function tjoin --description 'Fuzzy-match a tmux session by name/pane title and switch to it'
     if test (count $argv) -eq 0
         echo "Usage: tjoin <pattern>" >&2
+        echo "       tjoin-tui [initial-query]" >&2
         return 1
     end
 
@@ -12,26 +32,22 @@ function tjoin --description 'Fuzzy-match a tmux session by name/pane title and 
     # Escape regex meta so the user's pattern is treated as a literal substring
     # (matches zsh's [[ "$haystack" == *"$pattern"* ]] semantics).
     set -l escaped (string escape --style=regex -- $pattern)
-    set -l current_session
-    if set -q TMUX
-        set current_session (tmux display-message -p '#{client_session}' 2>/dev/null)
-    end
+    set -l current_session (__fractals_tmux_current_session)
     set -l session_matches
     set -l title_matches
     set -l matches
 
-    set -l lines (tmux list-sessions -F '#{session_name}	#{W:#{?#{==:#{window_panes},1},#{pane_title},#{P:[#{pane_title}] }} | }')
-    for line in $lines
-        set -l parts (string split -m 1 \t -- $line)
+    for line in (__fractals_tmux_session_rows)
+        set -l parts (string split -m 2 \t -- $line)
         set -l name $parts[1]
-        set -l titles $parts[2]
+        set -l titles $parts[3]
         set -l lower_name (string lower -- $name)
         set -l lower_titles (string lower -- $titles)
 
         if string match -qr -- ".*$escaped.*" $lower_name
-            set -a session_matches $line
+            set -a session_matches "$name	$titles"
         else if test "$name" != "$current_session"; and string match -qr -- ".*$escaped.*" $lower_titles
-            set -a title_matches $line
+            set -a title_matches "$name	$titles"
         end
     end
 
@@ -61,13 +77,18 @@ function tjoin --description 'Fuzzy-match a tmux session by name/pane title and 
     set -l name $parts[1]
     set -l title (string trim -r -c ' |' -- $parts[2])
 
-    echo "Joining $name \"$title\""
+    __fractals_tjoin_switch_to_session $name $title
+end
 
-    if set -q TMUX
-        tmux switch-client -t $name
-    else
-        tmux attach -t $name
-    end
+function tjoin-tui --description 'Pick a tmux session in fzf and switch to it'
+    set -l row (__fractals_tmux_pick_session tjoin 'select a tmux session to join' $argv)
+    or return $status
+
+    set -l name (__fractals_tmux_row_name $row)
+    set -l title (__fractals_tmux_row_titles $row)
+
+    __fractals_tjoin_switch_to_session $name $title
 end
 
 alias tj=tjoin
+alias tjt=tjoin-tui

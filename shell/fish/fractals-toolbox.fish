@@ -9,12 +9,20 @@ fish_add_path -gP -p "$HOME/.fractals-toolbox/common/bin"
 
 set -l fractal_fish_dir "$HOME/.fractals-toolbox/shell/fish"
 
+if test -r "$fractal_fish_dir/tmux-sessions.fish"
+    source "$fractal_fish_dir/tmux-sessions.fish"
+end
+
 if test -r "$fractal_fish_dir/tls.fish"
     source "$fractal_fish_dir/tls.fish"
 end
 
 if test -r "$fractal_fish_dir/tjoin.fish"
     source "$fractal_fish_dir/tjoin.fish"
+end
+
+if test -r "$fractal_fish_dir/tkill.fish"
+    source "$fractal_fish_dir/tkill.fish"
 end
 
 if test -r "$fractal_fish_dir/tmux-autospawn.fish"

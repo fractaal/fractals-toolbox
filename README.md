@@ -9,7 +9,7 @@ git clone https://github.com/fractaal/fractals-toolbox.git ~/.fractals-toolbox
 bash ~/.fractals-toolbox/deploy/install.sh
 ```
 
-Requires `bash` and `python3` (the zsh branch uses python3 for safe in-place `~/.zshrc` edits).
+Requires `bash` and `python3` (the zsh branch uses python3 for safe in-place `~/.zshrc` edits). The tmux session TUI pickers also require `fzf`.
 
 The installer detects what's on the machine and applies the matching wiring:
 
@@ -94,6 +94,14 @@ Defines a `tls` function — pane-title-aware tmux session lister. Output: `<ses
 ### shell/{zsh,fish}/tjoin.{zsh,fish}
 
 Defines `tjoin <pattern>` (alias `tj`) — case-insensitive substring match against `session_name + pane titles`, then switches your tmux client to the unique match (`switch-client` inside tmux, `attach` from outside). 0 matches errors; >1 matches list candidates so you can be more specific. Confirmation: `Joining term-389741 "✳ fix-login-redirect"`.
+
+Also defines `tjoin-tui [initial-query]` (alias `tjt`) — an `fzf` picker over the same session/title summary, then joins the selected session.
+
+### shell/{zsh,fish}/tkill.{zsh,fish}
+
+Defines `tkill [--force] <pattern>` (alias `tk`) — same matching rules as `tjoin`, but kills the unique tmux session. It refuses to kill your current session unless `--force` is passed. Confirmation: `Killing term-389741 "✳ fix-login-redirect"`.
+
+Also defines `tkill-tui [--force] [initial-query]` (alias `tkt`) — an `fzf` picker plus an explicit yes/no prompt before killing the selected session.
 
 ### shell/fish/fractals-toolbox.fish
 
