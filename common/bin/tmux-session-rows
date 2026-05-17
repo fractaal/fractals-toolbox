@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Print tmux sessions as: <name>\t<attached glyph>\t<pane title summary>
+set -euo pipefail
+
+exclude_current=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --exclude-current)
+      exclude_current=1
+      ;;
+    *)
+      printf 'tmux-session-rows: unknown arg: %s\n' "$1" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
+
+current_session=""
+if [[ -n "${TMUX:-}" ]]; then
+  current_session="$(tmux display-message -p '#{client_session}' 2>/dev/null || true)"
+fi
+
+format='#{session_name}	#{?session_attached,●,○}	#{W:#{?#{==:#{window_panes},1},#{pane_title},#{P:[#{pane_title}] }} | }'
+
+while IFS=$'\t' read -r name attached titles; do
+  [[ -n "${name:-}" ]] || continue
+  if [[ "$exclude_current" -eq 1 && -n "$current_session" && "$name" == "$current_session" ]]; then
+    continue
+  fi
+  printf '%s\t%s\t%s\n' "$name" "$attached" "${titles:-}"
+done < <(tmux list-sessions -F "$format" 2>/dev/null | sed 's/ | $//' || true)

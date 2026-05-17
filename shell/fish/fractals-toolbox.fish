@@ -25,6 +25,10 @@ if test -r "$fractal_fish_dir/tkill.fish"
     source "$fractal_fish_dir/tkill.fish"
 end
 
+if test -r "$fractal_fish_dir/tquit.fish"
+    source "$fractal_fish_dir/tquit.fish"
+end
+
 if test -r "$fractal_fish_dir/tmux-autospawn.fish"
     source "$fractal_fish_dir/tmux-autospawn.fish"
 end

@@ -61,6 +61,9 @@ Portable commands added to `PATH` by the zsh/fish entry points.
 |---------|-------------|
 | `mac-stream-mode` | Stop Sunshine, switch DP-8 to `3024x1964@60` scale `1.33`, then start Sunshine |
 | `native-monitor-mode` | Stop Sunshine, restore DP-8 to `3440x1440@180` scale `1`, then start Sunshine |
+| `tmux-session-rows` | Internal helper for pane-title-aware session picker rows |
+| `tmux-idle-session` | Internal helper to find/create detached idle `term-*` sessions |
+| `tmux-prune-idle-sessions` | Internal helper to garbage-collect detached idle `term-*` sessions |
 
 ### shell/zsh/hosts.zsh
 
@@ -85,7 +88,9 @@ Quick file transfer to remote hosts via `scp`, integrated with host aliases.
 
 ### shell/{zsh,fish}/tmux-autospawn.{zsh,fish}
 
-Auto-spawns a fresh `term-$pid` tmux session for every new interactive terminal window. Skips inside an existing tmux session, in non-interactive shells, and when tmux is missing. Sourced last by each shell's umbrella because it `exec`s tmux, replacing the shell process.
+Auto-attaches a new interactive terminal window to an existing detached idle `term-*` tmux session when one is available; otherwise spawns a fresh `term-$pid` session. Skips inside an existing tmux session, in non-interactive shells, and when tmux is missing. Sourced last by each shell's umbrella because it `exec`s tmux, replacing the shell process.
+
+Detached idle `term-*` sessions are garbage-collected by tmux hooks after 60 seconds. "Idle" means one window, one pane, no attached clients, and the pane foreground command is a shell.
 
 ### shell/{zsh,fish}/tls.{zsh,fish}
 
@@ -99,9 +104,13 @@ Also defines `tjoin-tui [initial-query]` (alias `tjt`) as an explicit picker ent
 
 ### shell/{zsh,fish}/tkill.{zsh,fish}
 
-Defines `tkill [--force] [pattern]` (alias `tk`) — same matching rules as `tjoin`, but kills the unique tmux session. With no pattern, opens an `fzf` picker plus an explicit yes/no prompt before killing the selected session. It refuses to kill your current session unless `--force` is passed. Confirmation: `Killing term-389741 "✳ fix-login-redirect"`.
+Defines `tkill [--force] [pattern]` (alias `tk`) — same matching rules as `tjoin`, but kills the unique tmux session. With no pattern, opens an `fzf` picker where Enter kills the highlighted session, reloads the same list, and stays open until Escape. The current session is hidden unless `--force` is passed. Confirmation for direct pattern kills: `Killing term-389741 "✳ fix-login-redirect"`.
 
 Also defines `tkill-tui [--force] [initial-query]` (alias `tkt`) as an explicit picker entrypoint.
+
+### shell/{zsh,fish}/tquit.{zsh,fish}
+
+Defines `tquit` (aliases `tq`, `texit`) — from inside tmux, switch the current client to a detached idle `term-*` session (or create one in the current directory), then kill the original session. This is the safe "exit this tmux session without closing my terminal/SSH" command.
 
 ### shell/fish/fractals-toolbox.fish
 

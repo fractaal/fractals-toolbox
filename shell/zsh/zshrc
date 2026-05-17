@@ -169,6 +169,10 @@ if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tkill.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/tkill.zsh"
 fi
 
+if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tquit.zsh" ]]; then
+  source "$HOME/.fractals-toolbox/shell/zsh/tquit.zsh"
+fi
+
 # Autospawn last — tmux runs as a child so the shell resumes on detach.
 if [[ -r "$HOME/.fractals-toolbox/shell/zsh/tmux-autospawn.zsh" ]]; then
   source "$HOME/.fractals-toolbox/shell/zsh/tmux-autospawn.zsh"

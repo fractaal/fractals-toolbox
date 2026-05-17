@@ -4,6 +4,10 @@
 #        tk    [--force] [pattern]
 #        tkill-tui [--force] [initial-query]
 #        tkt       [--force] [initial-query]
+#
+# No args opens a picker: Enter kills the highlighted session, reloads the
+# same list, and stays open until Escape. Current session is hidden unless
+# --force is passed.
 
 if not functions -q __fractals_tmux_session_rows
     if test -r "$HOME/.fractals-toolbox/shell/fish/tmux-sessions.fish"
@@ -94,7 +98,7 @@ function tkill --description 'Pick or fuzzy-match a tmux session by name/pane ti
     __fractals_tkill_kill_session $name $title
 end
 
-function tkill-tui --description 'Pick a tmux session in fzf and kill it'
+function tkill-tui --description 'Pick tmux sessions in fzf and kill them with Enter'
     set -l force 0
     set -l args $argv
     if test (count $args) -gt 0
@@ -105,27 +109,11 @@ function tkill-tui --description 'Pick a tmux session in fzf and kill it'
         end
     end
 
-    set -l row (__fractals_tmux_pick_session tkill 'select a tmux session to kill' $args)
-    or return $status
-
-    set -l name (__fractals_tmux_row_name $row)
-    set -l title (__fractals_tmux_row_titles $row)
-    set -l current_session (__fractals_tmux_current_session)
-
-    if test -n "$current_session"; and test "$name" = "$current_session"; and test $force -ne 1
-        echo "tkill-tui: refusing to kill current session '$name' (use --force to override)." >&2
-        return 1
+    if test $force -eq 1
+        __fractals_tmux_kill_picker --force $args
+    else
+        __fractals_tmux_kill_picker $args
     end
-
-    read -l -P "Kill tmux session '$name'? [y/N] " answer
-    switch (string lower -- $answer)
-        case y yes
-        case '*'
-            echo Cancelled
-            return 1
-    end
-
-    __fractals_tkill_kill_session $name $title
 end
 
 alias tk=tkill

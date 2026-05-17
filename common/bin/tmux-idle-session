@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# Find or create disposable idle tmux sessions from fractals-toolbox autospawn.
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: tmux-idle-session find [--exclude-current]
+       tmux-idle-session list [--exclude-current]
+       tmux-idle-session ensure [--exclude-current] [--cwd <dir>]
+
+Idle means: unattached term-* session, one window, one pane, foreground command is a shell.
+USAGE
+}
+
+is_shell_command() {
+  case "$1" in
+    bash|dash|fish|ksh|mksh|nu|pwsh|sh|xonsh|zsh) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+current_session() {
+  if [[ -n "${TMUX:-}" ]]; then
+    tmux display-message -p '#{client_session}' 2>/dev/null || true
+  fi
+}
+
+list_idle() {
+  local exclude_current="$1"
+  local current=""
+  current="$(current_session)"
+
+  local format='#{session_name}	#{session_attached}	#{session_windows}	#{window_panes}	#{pane_current_command}'
+  while IFS=$'\t' read -r name attached windows panes command; do
+    [[ -n "$name" ]] || continue
+    [[ "$name" == term-* ]] || continue
+    [[ "$attached" == "0" ]] || continue
+    [[ "$windows" == "1" ]] || continue
+    [[ "$panes" == "1" ]] || continue
+    if [[ "$exclude_current" == "1" && -n "$current" && "$name" == "$current" ]]; then
+      continue
+    fi
+    is_shell_command "$command" || continue
+    printf '%s\n' "$name"
+  done < <(tmux list-sessions -F "$format" 2>/dev/null || true)
+}
+
+make_session() {
+  local cwd="$1"
+  local base name suffix
+  base="term-$(date +%s)-$$"
+  name="$base"
+  suffix=0
+
+  while tmux has-session -t "=$name" 2>/dev/null; do
+    suffix=$((suffix + 1))
+    name="$base-$suffix"
+  done
+
+  if [[ -n "$cwd" ]]; then
+    tmux new-session -d -s "$name" -c "$cwd"
+  else
+    tmux new-session -d -s "$name"
+  fi
+  printf '%s\n' "$name"
+}
+
+command="${1:-}"
+if [[ -z "$command" ]]; then
+  usage
+  exit 2
+fi
+shift
+
+exclude_current=0
+cwd=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --exclude-current)
+      exclude_current=1
+      shift
+      ;;
+    --cwd)
+      if [[ $# -lt 2 ]]; then
+        printf 'tmux-idle-session: --cwd requires a directory\n' >&2
+        exit 2
+      fi
+      cwd="$2"
+      shift 2
+      ;;
+    *)
+      printf 'tmux-idle-session: unknown arg: %s\n' "$1" >&2
+      usage
+      exit 2
+      ;;
+  esac
+done
+
+case "$command" in
+  list)
+    list_idle "$exclude_current"
+    ;;
+  find)
+    list_idle "$exclude_current" | head -n 1
+    ;;
+  ensure)
+    found="$(list_idle "$exclude_current" | head -n 1)"
+    if [[ -n "$found" ]]; then
+      printf '%s\n' "$found"
+    else
+      make_session "$cwd"
+    fi
+    ;;
+  *)
+    printf 'tmux-idle-session: unknown command: %s\n' "$command" >&2
+    usage
+    exit 2
+    ;;
+esac
