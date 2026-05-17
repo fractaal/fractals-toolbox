@@ -1,7 +1,7 @@
 # tkill — case-insensitive substring match a tmux session by name or pane title,
 # then kill the unique match.
-# Usage: tkill [--force] <pattern>
-#        tk    [--force] <pattern>
+# Usage: tkill [--force] [pattern]
+#        tk    [--force] [pattern]
 #        tkill-tui [--force] [initial-query]
 #        tkt       [--force] [initial-query]
 
@@ -16,7 +16,7 @@ function __fractals_tkill_kill_session -a name titles
     tmux kill-session -t $name
 end
 
-function tkill --description 'Fuzzy-match a tmux session by name/pane title and kill it'
+function tkill --description 'Pick or fuzzy-match a tmux session by name/pane title and kill it'
     set -l force 0
     set -l args $argv
     if test (count $args) -gt 0
@@ -28,12 +28,16 @@ function tkill --description 'Fuzzy-match a tmux session by name/pane title and 
     end
 
     if test (count $args) -eq 0
-        echo "Usage: tkill [--force] <pattern>" >&2
-        echo "       tkill-tui [--force] [initial-query]" >&2
-        return 1
+        if test $force -eq 1
+            tkill-tui --force
+        else
+            tkill-tui
+        end
+        return $status
     end
 
-    set -l pattern (string lower -- $args[1])
+    set -l query (string join ' ' -- $args)
+    set -l pattern (string lower -- $query)
     # Escape regex meta so the user's pattern is treated as a literal substring
     # (matches zsh's [[ "$haystack" == *"$pattern"* ]] semantics).
     set -l escaped (string escape --style=regex -- $pattern)
@@ -66,10 +70,10 @@ function tkill --description 'Fuzzy-match a tmux session by name/pane title and 
 
     set -l n (count $matches)
     if test $n -eq 0
-        echo "tkill: no session matches '$args[1]'" >&2
+        echo "tkill: no session matches '$query'" >&2
         return 1
     else if test $n -gt 1
-        echo "tkill: '$args[1]' is ambiguous, matches $n sessions:" >&2
+        echo "tkill: '$query' is ambiguous, matches $n sessions:" >&2
         for m in $matches
             set -l parts (string split -m 1 \t -- $m)
             set -l ti (string trim -r -c ' |' -- $parts[2])

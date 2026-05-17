@@ -1,7 +1,7 @@
 # tkill — case-insensitive substring match a tmux session by name or pane title,
 # then kill the unique match.
-# Usage: tkill [--force] <pattern>
-#        tk    [--force] <pattern>
+# Usage: tkill [--force] [pattern]
+#        tk    [--force] [pattern]
 #        tkill-tui [--force] [initial-query]
 #        tkt       [--force] [initial-query]
 
@@ -26,12 +26,16 @@ tkill() {
   fi
 
   if (( $# == 0 )); then
-    echo "Usage: tkill [--force] <pattern>" >&2
-    echo "       tkill-tui [--force] [initial-query]" >&2
-    return 1
+    if (( force )); then
+      tkill-tui --force
+    else
+      tkill-tui
+    fi
+    return $?
   fi
 
-  local pattern="${(L)1}"
+  local query="$*"
+  local pattern="${(L)query}"
   local current_session=""
   current_session="$(_fractals_tmux_current_session)"
   local -a session_matches title_matches matches
@@ -57,10 +61,10 @@ tkill() {
 
   local n=${#matches[@]}
   if (( n == 0 )); then
-    echo "tkill: no session matches '$1'" >&2
+    echo "tkill: no session matches '$query'" >&2
     return 1
   elif (( n > 1 )); then
-    echo "tkill: '$1' is ambiguous, matches $n sessions:" >&2
+    echo "tkill: '$query' is ambiguous, matches $n sessions:" >&2
     for m in "${matches[@]}"; do
       name="${m%%$'\t'*}"
       titles="${m#*$'\t'}"

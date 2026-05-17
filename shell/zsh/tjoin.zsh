@@ -1,7 +1,7 @@
 # tjoin — case-insensitive substring match a tmux session by name or pane title,
 # then switch to it (switch-client inside tmux, attach from outside).
-# Usage: tjoin <pattern>
-#        tj    <pattern>
+# Usage: tjoin [pattern]
+#        tj    [pattern]
 #        tjoin-tui [initial-query]
 #        tjt       [initial-query]
 
@@ -25,12 +25,12 @@ _fractals_tjoin_switch_to_session() {
 
 tjoin() {
   if (( $# == 0 )); then
-    echo "Usage: tjoin <pattern>" >&2
-    echo "       tjoin-tui [initial-query]" >&2
-    return 1
+    tjoin-tui
+    return $?
   fi
 
-  local pattern="${(L)1}"
+  local query="$*"
+  local pattern="${(L)query}"
   local current_session=""
   current_session="$(_fractals_tmux_current_session)"
   local -a session_matches title_matches matches
@@ -56,10 +56,10 @@ tjoin() {
 
   local n=${#matches[@]}
   if (( n == 0 )); then
-    echo "tjoin: no session matches '$1'" >&2
+    echo "tjoin: no session matches '$query'" >&2
     return 1
   elif (( n > 1 )); then
-    echo "tjoin: '$1' is ambiguous, matches $n sessions:" >&2
+    echo "tjoin: '$query' is ambiguous, matches $n sessions:" >&2
     for m in "${matches[@]}"; do
       name="${m%%$'\t'*}"
       titles="${m#*$'\t'}"

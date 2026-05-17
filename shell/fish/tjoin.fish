@@ -1,7 +1,7 @@
 # tjoin — case-insensitive substring match a tmux session by name or pane title,
 # then switch to it (switch-client inside tmux, attach from outside).
-# Usage: tjoin <pattern>
-#        tj    <pattern>
+# Usage: tjoin [pattern]
+#        tj    [pattern]
 #        tjoin-tui [initial-query]
 #        tjt       [initial-query]
 
@@ -21,14 +21,14 @@ function __fractals_tjoin_switch_to_session -a name titles
     end
 end
 
-function tjoin --description 'Fuzzy-match a tmux session by name/pane title and switch to it'
+function tjoin --description 'Pick or fuzzy-match a tmux session by name/pane title and switch to it'
     if test (count $argv) -eq 0
-        echo "Usage: tjoin <pattern>" >&2
-        echo "       tjoin-tui [initial-query]" >&2
-        return 1
+        tjoin-tui
+        return $status
     end
 
-    set -l pattern (string lower -- $argv[1])
+    set -l query (string join ' ' -- $argv)
+    set -l pattern (string lower -- $query)
     # Escape regex meta so the user's pattern is treated as a literal substring
     # (matches zsh's [[ "$haystack" == *"$pattern"* ]] semantics).
     set -l escaped (string escape --style=regex -- $pattern)
@@ -61,10 +61,10 @@ function tjoin --description 'Fuzzy-match a tmux session by name/pane title and 
 
     set -l n (count $matches)
     if test $n -eq 0
-        echo "tjoin: no session matches '$argv[1]'" >&2
+        echo "tjoin: no session matches '$query'" >&2
         return 1
     else if test $n -gt 1
-        echo "tjoin: '$argv[1]' is ambiguous, matches $n sessions:" >&2
+        echo "tjoin: '$query' is ambiguous, matches $n sessions:" >&2
         for m in $matches
             set -l parts (string split -m 1 \t -- $m)
             set -l ti (string trim -r -c ' |' -- $parts[2])

@@ -93,15 +93,15 @@ Defines a `tls` function — pane-title-aware tmux session lister. Output: `<ses
 
 ### shell/{zsh,fish}/tjoin.{zsh,fish}
 
-Defines `tjoin <pattern>` (alias `tj`) — case-insensitive substring match against `session_name + pane titles`, then switches your tmux client to the unique match (`switch-client` inside tmux, `attach` from outside). 0 matches errors; >1 matches list candidates so you can be more specific. Confirmation: `Joining term-389741 "✳ fix-login-redirect"`.
+Defines `tjoin [pattern]` (alias `tj`) — with a pattern, case-insensitive substring match against `session_name + pane titles`, then switches your tmux client to the unique match (`switch-client` inside tmux, `attach` from outside). 0 matches errors; >1 matches list candidates so you can be more specific. With no args, opens an `fzf` picker over the same session/title summary. Confirmation: `Joining term-389741 "✳ fix-login-redirect"`.
 
-Also defines `tjoin-tui [initial-query]` (alias `tjt`) — an `fzf` picker over the same session/title summary, then joins the selected session.
+Also defines `tjoin-tui [initial-query]` (alias `tjt`) as an explicit picker entrypoint.
 
 ### shell/{zsh,fish}/tkill.{zsh,fish}
 
-Defines `tkill [--force] <pattern>` (alias `tk`) — same matching rules as `tjoin`, but kills the unique tmux session. It refuses to kill your current session unless `--force` is passed. Confirmation: `Killing term-389741 "✳ fix-login-redirect"`.
+Defines `tkill [--force] [pattern]` (alias `tk`) — same matching rules as `tjoin`, but kills the unique tmux session. With no pattern, opens an `fzf` picker plus an explicit yes/no prompt before killing the selected session. It refuses to kill your current session unless `--force` is passed. Confirmation: `Killing term-389741 "✳ fix-login-redirect"`.
 
-Also defines `tkill-tui [--force] [initial-query]` (alias `tkt`) — an `fzf` picker plus an explicit yes/no prompt before killing the selected session.
+Also defines `tkill-tui [--force] [initial-query]` (alias `tkt`) as an explicit picker entrypoint.
 
 ### shell/fish/fractals-toolbox.fish
 
