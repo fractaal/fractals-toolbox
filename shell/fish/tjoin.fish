@@ -1,93 +1,15 @@
-# tjoin — case-insensitive substring match a tmux session by name or pane title,
-# then switch to it (switch-client inside tmux, attach from outside).
+# tjoin — join tmux sessions by direct fuzzy match, or via fzf picker with no args.
 # Usage: tjoin [pattern]
 #        tj    [pattern]
 #        tjoin-tui [initial-query]
 #        tjt       [initial-query]
 
-if not functions -q __fractals_tmux_session_rows
-    if test -r "$HOME/.fractals-toolbox/shell/fish/tmux-sessions.fish"
-        source "$HOME/.fractals-toolbox/shell/fish/tmux-sessions.fish"
-    end
-end
-
-function __fractals_tjoin_switch_to_session -a name titles
-    echo "Joining $name \"$titles\""
-
-    if set -q TMUX
-        tmux switch-client -t $name
-    else
-        tmux attach -t $name
-    end
-end
-
-function tjoin --description 'Pick or fuzzy-match a tmux session by name/pane title and switch to it'
-    if test (count $argv) -eq 0
-        tjoin-tui
-        return $status
-    end
-
-    set -l query (string join ' ' -- $argv)
-    set -l pattern (string lower -- $query)
-    # Escape regex meta so the user's pattern is treated as a literal substring
-    # (matches zsh's [[ "$haystack" == *"$pattern"* ]] semantics).
-    set -l escaped (string escape --style=regex -- $pattern)
-    set -l current_session (__fractals_tmux_current_session)
-    set -l session_matches
-    set -l title_matches
-    set -l matches
-
-    for line in (__fractals_tmux_session_rows)
-        set -l parts (string split -m 2 \t -- $line)
-        set -l name $parts[1]
-        set -l titles $parts[3]
-        set -l lower_name (string lower -- $name)
-        set -l lower_titles (string lower -- $titles)
-
-        if string match -qr -- ".*$escaped.*" $lower_name
-            set -a session_matches "$name	$titles"
-        else if test "$name" != "$current_session"; and string match -qr -- ".*$escaped.*" $lower_titles
-            set -a title_matches "$name	$titles"
-        end
-    end
-
-    # Prefer stable session ids/names over volatile pane titles. Also do not let
-    # the current pane title match the just-run command, e.g. `tjoin 758`.
-    if test (count $session_matches) -gt 0
-        set matches $session_matches
-    else
-        set matches $title_matches
-    end
-
-    set -l n (count $matches)
-    if test $n -eq 0
-        echo "tjoin: no session matches '$query'" >&2
-        return 1
-    else if test $n -gt 1
-        echo "tjoin: '$query' is ambiguous, matches $n sessions:" >&2
-        for m in $matches
-            set -l parts (string split -m 1 \t -- $m)
-            set -l ti (string trim -r -c ' |' -- $parts[2])
-            echo "  $parts[1]  $ti" >&2
-        end
-        return 1
-    end
-
-    set -l parts (string split -m 1 \t -- $matches[1])
-    set -l name $parts[1]
-    set -l title (string trim -r -c ' |' -- $parts[2])
-
-    __fractals_tjoin_switch_to_session $name $title
+function tjoin --description 'Join tmux sessions by direct match, or picker with no args'
+    "$HOME/.fractals-toolbox/common/bin/tjoin" $argv
 end
 
 function tjoin-tui --description 'Pick a tmux session in fzf and switch to it'
-    set -l row (__fractals_tmux_pick_session tjoin 'select a tmux session to join' $argv)
-    or return $status
-
-    set -l name (__fractals_tmux_row_name $row)
-    set -l title (__fractals_tmux_row_titles $row)
-
-    __fractals_tjoin_switch_to_session $name $title
+    "$HOME/.fractals-toolbox/common/bin/tjoin-tui" $argv
 end
 
 alias tj=tjoin

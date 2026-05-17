@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# Kill tmux sessions by direct fuzzy match, or repeatedly via fzf picker.
+set -euo pipefail
+
+bin_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+rows_cmd="$bin_dir/tmux-session-rows"
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: tkill [--force] [pattern]
+       tk    [--force] [pattern]
+       tkill-tui [--force] [initial-query]
+       tkt       [--force] [initial-query]
+USAGE
+}
+
+current_session() {
+  if [[ -n "${TMUX:-}" ]]; then
+    tmux display-message -p '#{client_session}' 2>/dev/null || true
+  fi
+}
+
+parse_force() {
+  force=0
+  if [[ "${1:-}" == "--force" || "${1:-}" == "-f" ]]; then
+    force=1
+    shift
+  fi
+  remaining_args=("$@")
+}
+
+kill_picker() {
+  local force="$1"
+  shift
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "tkill: fzf is required for the picker." >&2
+    return 127
+  fi
+
+  local -a row_args=()
+  if (( ! force )); then
+    row_args+=(--exclude-current)
+  fi
+
+  local rows query reload_cmd header
+  rows="$($rows_cmd "${row_args[@]}" 2>/dev/null)" || true
+  if [[ -z "$rows" ]]; then
+    if (( force )); then
+      echo "tkill: no tmux sessions found." >&2
+    else
+      echo "tkill: no killable sessions found (current session is hidden; use --force to include it)." >&2
+    fi
+    return 1
+  fi
+
+  query="$*"
+  reload_cmd="$(printf '%q ' "$rows_cmd" "${row_args[@]}")"
+  header="enter kill highlighted • ctrl-r refresh • esc done"
+  if (( ! force )); then
+    header+=" • current session hidden (--force includes it)"
+  fi
+
+  local -a fzf_args=()
+  fzf_args=(
+    --delimiter=$'\t'
+    --with-nth=1,2,3
+    --prompt='tkill> '
+    --height=80%
+    --layout=reverse
+    --border
+    --header="$header"
+    --bind="enter:execute-silent(tmux kill-session -t {1})+reload($reload_cmd)"
+    --bind="ctrl-r:reload($reload_cmd)"
+  )
+  if [[ -n "$query" ]]; then
+    fzf_args+=(--query="$query")
+  fi
+
+  printf '%s\n' "$rows" | fzf "${fzf_args[@]}" >/dev/null
+}
+
+kill_session() {
+  local name="$1"
+  local titles="$2"
+  echo "Killing $name \"$titles\""
+  tmux kill-session -t "$name"
+}
+
+match_session() {
+  local query="$*"
+  local pattern="${query,,}"
+  local current=""
+  current="$(current_session)"
+
+  local -a session_matches=() title_matches=() matches=()
+  local line name _attached titles lower_name lower_titles
+  while IFS=$'\t' read -r name _attached titles; do
+    [[ -n "${name:-}" ]] || continue
+    lower_name="${name,,}"
+    lower_titles="${titles,,}"
+    if [[ "$lower_name" == *"$pattern"* ]]; then
+      session_matches+=("${name}"$'\t'"${titles}")
+    elif [[ "$name" != "$current" && "$lower_titles" == *"$pattern"* ]]; then
+      title_matches+=("${name}"$'\t'"${titles}")
+    fi
+  done < <("$rows_cmd")
+
+  if (( ${#session_matches[@]} > 0 )); then
+    matches=("${session_matches[@]}")
+  else
+    matches=("${title_matches[@]}")
+  fi
+
+  if (( ${#matches[@]} == 0 )); then
+    echo "tkill: no session matches '$query'" >&2
+    return 1
+  fi
+  if (( ${#matches[@]} > 1 )); then
+    echo "tkill: '$query' is ambiguous, matches ${#matches[@]} sessions:" >&2
+    for line in "${matches[@]}"; do
+      name="${line%%$'\t'*}"
+      titles="${line#*$'\t'}"
+      echo "  $name  ${titles% | }" >&2
+    done
+    return 1
+  fi
+
+  printf '%s\n' "${matches[0]}"
+}
+
+main() {
+  local invoked="$(basename -- "$0")"
+  local force remaining_args row name titles current
+  local -a remaining_args
+
+  parse_force "$@"
+
+  case "$invoked" in
+    tkill-tui|tkt)
+      kill_picker "$force" "${remaining_args[@]}"
+      return $?
+      ;;
+    tkill|tk)
+      if [[ ${#remaining_args[@]} -eq 0 ]]; then
+        kill_picker "$force"
+        return $?
+      fi
+      row="$(match_session "${remaining_args[@]}")" || return $?
+      ;;
+    *)
+      usage
+      return 2
+      ;;
+  esac
+
+  name="${row%%$'\t'*}"
+  titles="${row#*$'\t'}"
+  titles="${titles% | }"
+  current="$(current_session)"
+
+  if [[ -n "$current" && "$name" == "$current" && "$force" -ne 1 ]]; then
+    echo "tkill: refusing to kill current session '$name' (use --force to override)." >&2
+    return 1
+  fi
+
+  kill_session "$name" "$titles"
+}
+
+main "$@"

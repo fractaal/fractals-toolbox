@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Leave the current auto tmux session without dropping the terminal/SSH.
+set -euo pipefail
+
+bin_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+idle_cmd="$bin_dir/tmux-idle-session"
+
+current=""
+if [[ -n "${TMUX:-}" ]]; then
+  current="$(tmux display-message -p '#{client_session}' 2>/dev/null || true)"
+fi
+if [[ -z "$current" ]]; then
+  echo "tquit: not inside a tmux client." >&2
+  exit 1
+fi
+
+target="$($idle_cmd ensure --exclude-current --cwd "$PWD")"
+if [[ -z "$target" ]]; then
+  echo "tquit: failed to find or create an idle target session." >&2
+  exit 1
+fi
+if [[ "$target" == "$current" ]]; then
+  echo "tquit: idle target resolved to current session; refusing." >&2
+  exit 1
+fi
+
+echo "Switching to $target; killing $current"
+tmux switch-client -t "$target"
+tmux kill-session -t "$current"

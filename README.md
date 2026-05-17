@@ -61,6 +61,9 @@ Portable commands added to `PATH` by the zsh/fish entry points.
 |---------|-------------|
 | `mac-stream-mode` | Stop Sunshine, switch DP-8 to `3024x1964@60` scale `1.33`, then start Sunshine |
 | `native-monitor-mode` | Stop Sunshine, restore DP-8 to `3440x1440@180` scale `1`, then start Sunshine |
+| `tjoin` / `tj` / `tjoin-tui` / `tjt` | Join tmux sessions by direct fuzzy match, or via `fzf` picker |
+| `tkill` / `tk` / `tkill-tui` / `tkt` | Kill tmux sessions by direct fuzzy match, or repeatedly via `fzf` picker |
+| `tquit` / `tq` / `texit` | Switch to an idle tmux session, then kill the current one |
 | `tmux-session-rows` | Internal helper for pane-title-aware session picker rows |
 | `tmux-idle-session` | Internal helper to find/create detached idle `term-*` sessions |
 | `tmux-prune-idle-sessions` | Internal helper to garbage-collect detached idle `term-*` sessions |
