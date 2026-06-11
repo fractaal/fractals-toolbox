@@ -33,6 +33,15 @@ If you'd rather skip the installer and only want the zsh side:
 
 Shared tmux configuration — read by tmux regardless of shell or OS. The deploy installer will symlink `~/.tmux.conf` to this file. Sets mouse on, vi-mode keys, double-lined pane borders with a top status row showing pane index, title, and running command, a `C-b T` keybind to rename the current pane title, and forwards pane titles up to the outer terminal (kitty tab bar) so multi-pane sessions stay legible.
 
+### common/bin
+
+Portable commands added to `PATH` by the zsh/fish entry points.
+
+| Command | Description |
+|---------|-------------|
+| `qmd` | Local qmd wrapper/serializer |
+| `ytmp3` | Download any yt-dlp-supported URL as a highest-quality MP3 (`ytmp3 -d ~/Music <url>`) |
+
 ### shell/zsh/zshrc
 
 | Name | Type | Description |

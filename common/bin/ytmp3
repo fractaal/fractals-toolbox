@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ytmp3 [options] <url> [url ...]
+
+Download yt-dlp-supported media as highest-quality MP3 files.
+
+Options:
+  -d, --dest DIR       Output directory (default: ~/Downloads)
+  -o, --output TMPL    yt-dlp output template
+                       default: DIR/%(title)s [%(id)s].%(ext)s
+  --no-thumbnail       Do not embed thumbnails
+  --no-metadata        Do not embed metadata
+  --no-playlist        Download only the single video URL supplied
+  -h, --help           Show this help
+
+Examples:
+  ytmp3 'https://www.youtube.com/watch?v=...'
+  ytmp3 -d ~/Music/YouTube 'https://youtu.be/...'
+  ytmp3 --no-playlist 'https://youtube.com/watch?v=...&list=...'
+
+Requires ffmpeg on PATH for MP3 conversion and thumbnail/metadata embedding.
+Set YT_DLP_BIN=/path/to/yt-dlp if yt-dlp is not on PATH.
+EOF
+}
+
+fail() {
+  printf 'ytmp3: %s\n' "$*" >&2
+  exit 1
+}
+
+expand_path() {
+  local path="$1"
+  case "$path" in
+    "~") printf '%s\n' "$HOME" ;;
+    "~/"*) printf '%s/%s\n' "$HOME" "${path:2}" ;;
+    /*) printf '%s\n' "$path" ;;
+    *) printf '%s/%s\n' "$PWD" "$path" ;;
+  esac
+}
+
+dest="$HOME/Downloads"
+output_template=""
+embed_thumbnail=1
+embed_metadata=1
+playlist_args=()
+urls=()
+
+while (( $# > 0 )); do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -d|--dest)
+      [[ $# -ge 2 ]] || fail "$1 needs a directory"
+      dest="$(expand_path "$2")"
+      shift 2
+      ;;
+    --dest=*)
+      dest="$(expand_path "${1#--dest=}")"
+      shift
+      ;;
+    -o|--output)
+      [[ $# -ge 2 ]] || fail "$1 needs an output template"
+      output_template="$2"
+      shift 2
+      ;;
+    --output=*)
+      output_template="${1#--output=}"
+      shift
+      ;;
+    --no-thumbnail)
+      embed_thumbnail=0
+      shift
+      ;;
+    --no-metadata)
+      embed_metadata=0
+      shift
+      ;;
+    --no-playlist)
+      playlist_args+=(--no-playlist)
+      shift
+      ;;
+    --)
+      shift
+      while (( $# > 0 )); do
+        urls+=("$1")
+        shift
+      done
+      ;;
+    -*)
+      fail "unknown option: $1"
+      ;;
+    *)
+      urls+=("$1")
+      shift
+      ;;
+  esac
+done
+
+(( ${#urls[@]} > 0 )) || { usage >&2; exit 1; }
+
+yt_dlp_bin="${YT_DLP_BIN:-}"
+if [[ -z "$yt_dlp_bin" ]]; then
+  if command -v yt-dlp >/dev/null 2>&1; then
+    yt_dlp_bin="$(command -v yt-dlp)"
+  elif [[ -x "$HOME/.local/bin/yt-dlp" ]]; then
+    yt_dlp_bin="$HOME/.local/bin/yt-dlp"
+  else
+    fail "yt-dlp is not on PATH; install it or set YT_DLP_BIN"
+  fi
+fi
+
+[[ -x "$yt_dlp_bin" ]] || fail "YT_DLP_BIN is not executable: $yt_dlp_bin"
+command -v ffmpeg >/dev/null 2>&1 || fail "ffmpeg is not on PATH"
+
+mkdir -p "$dest"
+if [[ -z "$output_template" ]]; then
+  output_template="$dest/%(title)s [%(id)s].%(ext)s"
+fi
+
+args=(
+  --format bestaudio/best
+  --extract-audio
+  --audio-format mp3
+  --audio-quality 0
+  --prefer-ffmpeg
+  --restrict-filenames
+  --windows-filenames
+  --no-mtime
+  --output "$output_template"
+)
+
+if (( embed_thumbnail )); then
+  args+=(--embed-thumbnail)
+fi
+
+if (( embed_metadata )); then
+  args+=(--embed-metadata)
+fi
+
+args+=("${playlist_args[@]}")
+
+printf 'ytmp3: downloading highest-quality MP3 to %s\n' "$dest"
+"$yt_dlp_bin" "${args[@]}" "${urls[@]}"
