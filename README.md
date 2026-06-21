@@ -40,6 +40,7 @@ Portable commands added to `PATH` by the zsh/fish entry points.
 | Command | Description |
 |---------|-------------|
 | `qmd` | Local qmd wrapper/serializer |
+| `sshtui` | Interactive SSH port-tunnel TUI for discovering and forwarding remote listening ports |
 | `ytmp3` | Download any yt-dlp-supported URL as a highest-quality MP3 (`ytmp3 -d ~/Music <url>`) |
 
 ### shell/zsh/zshrc
@@ -59,6 +60,10 @@ Named host-alias system — define friendly names for SSH targets in `hosts.conf
 |---------|-------------|
 | `h <alias>` | SSH into a host alias |
 | `h --list` | List all configured host aliases |
+
+### common/sshtui
+
+Interactive SSH port-tunnel TUI. Pick a host from `~/.ssh/config` or toolbox host aliases, scan remote listening ports live, and open/kill local forwards from the terminal.
 
 ### shell/zsh/sshtunnel.zsh
 

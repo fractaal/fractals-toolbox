@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Launcher for sshtui (lives on PATH via common/bin). Prefers node (the
+# reference runtime for TTY/raw-mode behavior); falls back to bun.
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+app="$here/../sshtui/sshtui.mjs"
+
+if command -v node >/dev/null 2>&1; then
+  exec node "$app" "$@"
+elif command -v bun >/dev/null 2>&1; then
+  exec bun "$app" "$@"
+else
+  echo "sshtui requires node or bun on PATH." >&2
+  exit 1
+fi
