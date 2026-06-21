@@ -1,12 +1,13 @@
 __sshsend_usage() {
   cat <<'EOF'
 Usage:
-  sshsend <host-alias> <local-file-or-folder>
+  sshsend <host-alias-or-address> <local-file-or-folder>
   sshsend --list-hosts
   sshsend --help
 
 Examples:
   sshsend saturn-02 ./some-file.txt
+  sshsend benjude@unixboat ./some-file.txt
   sshsend saturn-02 ./some-folder
 EOF
 }
@@ -51,9 +52,9 @@ sshsend() {
     return 1
   fi
 
-  local host_alias="$1"
+  local host_spec="$1"
   local source_path="$2"
-  local source_name target remote_destination
+  local source_name target remote_destination target_description
 
   if [[ ! -e "$source_path" ]]; then
     echo "Local path '${source_path}' does not exist." >&2
@@ -63,14 +64,15 @@ sshsend() {
   source_path="$(__sshsend_normalize_source_path "$source_path")"
   source_name="${source_path:t}"
 
-  if ! target="$(__fractal_resolve_host_alias "$host_alias")"; then
-    echo "Unknown host alias '${host_alias}'." >&2
-    __fractal_list_host_aliases
-    return 1
+  if target="$(__fractal_resolve_host_alias "$host_spec")"; then
+    target_description="${host_spec} (${target})"
+  else
+    target="$host_spec"
+    target_description="$target"
   fi
 
   remote_destination="${target}:~/Downloads/"
-  echo "Sending '${source_name}' to ${host_alias} (${target})..."
+  echo "Sending '${source_name}' to ${target_description}..."
 
   if command -v rsync >/dev/null 2>&1; then
     rsync -azP -e ssh -- "$source_path" "$remote_destination"
@@ -95,7 +97,7 @@ _sshsend() {
   _arguments -C \
     '(-h --help)'{-h,--help}'[show usage]' \
     '--list-hosts[list configured host aliases]' \
-    '1:host alias:__fractal_complete_host_aliases' \
+    '1:host alias or address:__fractal_complete_host_aliases' \
     '2:local file or folder:_files -/'
 }
 
