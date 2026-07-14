@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Restore the normal Hyprland config after start-hyprland enters safe mode.
+set -euo pipefail
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+instances=$(hyprctl instances -j)
+signature="${HYPRLAND_INSTANCE_SIGNATURE:-}"
+
+if [[ ! -f "$XDG_RUNTIME_DIR/hypr/$signature/recoverycfg.conf" ]] ||
+  ! jq -e --arg signature "$signature" 'any(.instance == $signature)' <<<"$instances" >/dev/null; then
+  safe_instances=()
+  while IFS= read -r candidate; do
+    [[ -f "$XDG_RUNTIME_DIR/hypr/$candidate/recoverycfg.conf" ]] && safe_instances+=("$candidate")
+  done < <(jq -r '.[].instance' <<<"$instances")
+
+  if (( ${#safe_instances[@]} == 0 )); then
+    echo "No live Hyprland safe-mode instance found." >&2
+    exit 1
+  elif (( ${#safe_instances[@]} > 1 )); then
+    printf 'Multiple live Hyprland safe-mode instances found:\n  %s\n' "${safe_instances[*]}" >&2
+    exit 1
+  fi
+
+  signature="${safe_instances[0]}"
+fi
+
+export HYPRLAND_INSTANCE_SIGNATURE="$signature"
+export WAYLAND_DISPLAY
+WAYLAND_DISPLAY=$(jq -er --arg signature "$signature" '.[] | select(.instance == $signature) | .wl_socket' <<<"$instances")
+
+instance_dir="$XDG_RUNTIME_DIR/hypr/$signature"
+recovery_config="$instance_dir/recoverycfg.conf"
+normal_config="${HYPRLAND_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.conf}"
+
+if [[ ! -f "$normal_config" ]]; then
+  echo "Hyprland config not found: $normal_config" >&2
+  exit 1
+fi
+
+[[ -e "$recovery_config.safe-mode-stub.bak" ]] || cp "$recovery_config" "$recovery_config.safe-mode-stub.bak"
+printf 'source = %s\n' "$normal_config" > "$recovery_config"
+timeout 5 hyprctl reload >/dev/null
+
+config_errors=$(timeout 5 hyprctl configerrors)
+if [[ -n "$config_errors" ]]; then
+  printf 'Hyprland loaded the config with errors:\n%s\n' "$config_errors" >&2
+fi
+
+systemctl --user import-environment HYPRLAND_INSTANCE_SIGNATURE WAYLAND_DISPLAY
+systemctl --user restart quickshell.service
+sleep 2
+
+quickshell_pid=$(systemctl --user show quickshell.service -p MainPID --value)
+if ! systemctl --user is-active --quiet quickshell.service ||
+  [[ "$quickshell_pid" == 0 ]] ||
+  ! timeout 5 qs -c ii ipc --pid "$quickshell_pid" show >/dev/null; then
+  systemctl --user status quickshell.service --no-pager -l >&2 || true
+  echo "Hyprland recovered, but Quickshell did not start cleanly." >&2
+  exit 1
+fi
+
+printf 'Normal Hyprland config loaded; Quickshell restarted.\n'
