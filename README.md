@@ -40,6 +40,7 @@ Portable commands added to `PATH` by the zsh/fish entry points.
 | Command | Description |
 |---------|-------------|
 | `qmd` | Local qmd wrapper/serializer |
+| `replace-text` | Case-preserving whole-token replace in a file or directory tree, with automatic backup (`replace-text <path> <from> <to>`) |
 | `sshtui` | Interactive SSH port-tunnel TUI for discovering and forwarding remote listening ports |
 | `ytmp3` | Download any yt-dlp-supported URL as a highest-quality MP3 (`ytmp3 -d ~/Music <url>`) |
 

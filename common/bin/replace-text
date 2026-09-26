@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Launcher for replace-text (lives on PATH via common/bin).
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec node "$here/../replace-text/replace-text.js" "$@"
